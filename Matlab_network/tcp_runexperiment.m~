@@ -1,0 +1,21 @@
+function [ res ] = tcp_runexperiment( tcpipClient, params )
+%Send run experiment command to KUKA with params
+
+fprintf(tcpipClient, 'Run\n');
+fwrite(tcpipClient, length(params));
+for i=1:length(params)
+    fwrite(tcpipClient, params(i));
+end
+fprintf(tcpipClient, 'End\n');
+
+
+% msg = fscanf(tcpipClient);
+% if (strcmp(msg, 'ok\n'))
+%     disp('reply received');
+%     res = 1;
+% else
+%     disp('no reply');
+%     res = 0;
+% end
+end
+
