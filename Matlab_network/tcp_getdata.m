@@ -7,7 +7,7 @@ if (~strcmp(msg(1:end-1), 'Data'))
     disp(msg);
     return
 end
-disp('getting data size');
+%disp('getting data size');
 
 
 msg = fscanf(tcpipClient);
@@ -15,7 +15,7 @@ rows = str2num(msg);
 msg = fscanf(tcpipClient);
 cols = str2num(msg);
 
-rows, cols
+%rows, cols
 data = zeros(rows, cols);
 
 for i=1:rows
