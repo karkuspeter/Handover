@@ -25,7 +25,7 @@ data.samples = [1.5041
     4.4464
 ];
 data.policyMean = [3];
-data.policyCov = [3];
+data.policyCov = {3};
 data.prefFeedback = [1     2
      3     2
      4     3
@@ -45,15 +45,16 @@ data.prefFeedback = [1     2
     18    17
     18    19
     ];
-data.absFeedback = [9     1
-     4     7
-     7    13
-     5    17];
+data.absFeedback = [1 9     
+     7 4     
+     13 7    
+     17 5   ];
 data.failedExperiments = [];
+data.hyp = [];
 
-if exist([data.fileName, '.mat'], 'file')
+if exist(['./', data.fileName, '.mat'], 'file')
     error([data.fileName, '.mat already exists!'])
 else
-    save([data.fileName, '.mat'], 'data');
+    save(['./',data.fileName, '.mat'], 'data');
 end
     

@@ -68,7 +68,7 @@ for ii = 1:length(resolutionSigP)
 end
     
 if plote
-figure, contourf(f), colorbar, xlabel('sigA'), ylabel('sigP')
+figure, contourf(f(:, :, find(quantileOpt == resolutionQuantile))), colorbar, xlabel('sigA'), ylabel('sigP')
 h = get(gca);
 for i = 1:length(resolutionSigA)
     resolutionSigmaACell{i} = num2str(resolutionSigA(i), 4);
