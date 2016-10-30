@@ -90,6 +90,8 @@ if (N >= data.initSamples) && (mod(N-data.initSamples, data.updateSamples) == 0)
     Sigma = exp(-.5 * maha(x, x, W)) ;
     Sigma = Sigma + eye(size(Sigma)) * ridge;
     
+plotMatrix(Sigma);
+    
     f = zeros(size(x,1), 1);
     [fmap, ddS, GammaMap] = nr_plgp_wPrior(f, prefs, Sigma, sig, absFeedback, sigma2);
     

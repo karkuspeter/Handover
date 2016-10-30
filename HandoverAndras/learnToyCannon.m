@@ -74,7 +74,7 @@ if (N >= data.initSamples) && (mod(N-data.initSamples, data.updateSamples) == 0)
     prefs = data.prefFeedback;
     
     % get hyperparameters
-    [f, sigpOpt, sigaOpt, quantileOpt] = pref_loghyp_gridMedianTrick(x, prefs, absFeedback, ridge, logspace(-2,1,8), logspace(-2,1,8), [0.3, 0.5, 0.7], 1);
+    [f, sigpOpt, sigaOpt, quantileOpt] = pref_loghyp_gridMedianTrick(x, prefs, absFeedback, ridge, logspace(-2,1,8), logspace(-2,1,8), [0.3 0.5 0.7 ], 1);
     sig = sigpOpt;
     sigma2 = sigaOpt;
     w = medianTrick(x, quantileOpt); W = diag(w.^-2);
@@ -87,6 +87,8 @@ if (N >= data.initSamples) && (mod(N-data.initSamples, data.updateSamples) == 0)
     % Get latent rewards
     Sigma = exp(-.5 * maha(x, x, W)) ;
     Sigma = Sigma + eye(size(Sigma)) * ridge;
+    
+    plotMatrix(Sigma);
     
     f = zeros(size(x,1), 1);
     [fmap, ddS, GammaMap] = nr_plgp_wPrior(f, prefs, Sigma, sig, absFeedback, sigma2);

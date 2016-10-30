@@ -6,7 +6,7 @@ end
 for i = 1:size(samples, 2)
    
     dist = maha(samples(:, i), samples(:, i));
-    hypKernel(i) = .5*median(quantile(dist.^.5, quant));
+    hypKernel(i) = median(quantile(dist.^.5, quant));
     
     
 end
