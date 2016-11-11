@@ -15,6 +15,24 @@ else
     absoluteFeedback = 1;
 end
 
+
+    for k = 1:length(f)
+        for kk = 1:length(f)
+            ixHit3Save{k, kk} = [];
+        end
+    end
+    for k = 1:size(prefs, 1)
+        if isempty(ixHit3Save{prefs(k, 1), prefs(k, 2)})
+            ixHit3Save{prefs(k, 1), prefs(k, 2)} = [k];
+            ixHit3Save{prefs(k, 2), prefs(k, 1)} = [k];
+        else
+            ixHit3Save{prefs(k, 1), prefs(k, 2)} = [ixHit3Save{prefs(k, 1), prefs(k, 2)}, k];
+            ixHit3Save{prefs(k, 2), prefs(k, 1)} = [ixHit3Save{prefs(k, 2), prefs(k, 1)}, k];
+        end
+    end
+    
+%     gyozo = sort(prefs, 2);
+
 while and(norm(f-fprev) > 1e-3, step_counter < maxiter)
     for i = 1:size(prefs, 1)
         
@@ -39,6 +57,7 @@ while and(norm(f-fprev) > 1e-3, step_counter < maxiter)
     beta = zeros(size(K, 1), 1);
     
     dummy = iK * f;
+    
     
     for i = 1:length(f)
         
@@ -65,6 +84,7 @@ while and(norm(f-fprev) > 1e-3, step_counter < maxiter)
         
         ixHitAll = bsxfun(@eq, prefs, [i i]);
         ixHit = find(any(ixHitAll, 2));
+                
         for j = 1:length(f)
             
             if 0
@@ -79,19 +99,20 @@ while and(norm(f-fprev) > 1e-3, step_counter < maxiter)
                     end
                 end
                 
-                if j >=i
-                    
-                    gyozo = sort(prefs, 2);
-%                     feco = sum(bsxfun(@minus, gyozo, [i, j]), 2).^2;
-%                     feco == 0;
-                    ixHitAll2 = and(bsxfun(@eq, gyozo, [i, j]), 2);
-%                     feri2 = bsxfun(@eq, prefs, [j, i]);
-%                     ixHitAll2 = or(feri1, feri2);
-                    ixHit2 = find(all(ixHitAll2, 2));
-                    ixHit2Save{i, j} = ixHit2;
-                else
-                    ixHit2 = ixHit2Save{j, i};
-                end
+%                 if j >=i
+%                     
+%                     
+% 
+%                     ixHitAll2 = bsxfun(@eq, gyozo, [i, j]);
+% 
+%                     ixHit2 = find(all(ixHitAll2, 2));
+% 
+%                     ixHit2Save{i, j} = ixHit2;
+%                 else
+%                     ixHit2 = ixHit2Save{j, i};
+%                 end
+                
+                ixHit2 = ixHit3Save{i, j};
                 
                 for k = 1:length(ixHit2)
                     loc_ddCdf = - .5 / sig^2 * (pdfz(ixHit2(k))^2/cdfz(ixHit2(k))^2 + z(ixHit2(k)) * pdfz(ixHit2(k))/cdfz(ixHit2(k)));
@@ -142,6 +163,7 @@ while and(norm(f-fprev) > 1e-3, step_counter < maxiter)
     
 end
 fmap = f;
+
 
 if step_counter > maxiter
     warning('f optimization run over')

@@ -1,12 +1,12 @@
-function hypKernel = medianTrick(samples, quant)
+function hypKernel = medianTrick(samples, medianScale)
 if nargin < 2
-    quant = 0.5;
+    medianScale = 0.1;
 end
 
 for i = 1:size(samples, 2)
    
     dist = maha(samples(:, i), samples(:, i));
-    hypKernel(i) = median(quantile(dist.^.5, quant));
+    hypKernel(i) = medianScale*median(reshape(dist, [], 1));
     
     
 end
