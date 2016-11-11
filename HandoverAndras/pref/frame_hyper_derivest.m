@@ -3,9 +3,7 @@ clear all, close all
 rew = @(x) 2*(.5*exp(- (x - 2) * 1 * (x -2)) + exp(- x * 4 * x) -0.1174);
 addpath('../gp')
 addpath('..')
-addpath('~/svnprojects/ClassSystem/Helpers/')
 addpath('../DERIVESTsuite/')
-addpath('../teach-grad-hess/')
 
 x = -6:.1:9;
 
