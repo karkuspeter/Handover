@@ -4,7 +4,7 @@ addpath('../Matlab_Network/')
 addpath('./reps_demo/')
 addpath('./gp/')
 
-
+warning('off')
 
 load('ToyCannon.mat')
 
@@ -73,15 +73,41 @@ if (N >= data.initSamples) && (mod(N-data.initSamples, data.updateSamples) == 0)
     x = data.samples;
     prefs = data.prefFeedback;
     
-    % get hyperparameters
-    [f, sigpOpt, sigaOpt, quantileOpt] = pref_loghyp_gridMedianTrick(x, prefs, absFeedback, ridge, logspace(-2,1,8), logspace(-2,1,8), [0.3 0.5 0.7 ], 1);
-    sig = sigpOpt;
-    sigma2 = sigaOpt;
-    w = medianTrick(x, quantileOpt); W = diag(w.^-2);
+    save_loghyp_opt = zeros(data.gradRestarts, data.numHyper);
+    save_fopt = zeros(1, data.numHyper);
+    
+    
+    parfor i = 1:data.gradRestarts
+        
+        w = medianTrick(x, 0.5+rand(1)*2);
+        loghyp = log([0.1+rand(1), 0.1+rand(1), w]);
+        % get hyperparameters
+        options = optimoptions('fminunc', 'Algorithm','trust-region','GradObj','on','Hessian', 'off', 'MaxFunEvals', 100, 'TolX', 1e-3, 'TolFun', 1e-2);
+        optfun = @(lh) pref_loghyp_numGrad(lh, x, prefs, absFeedback, ridge, 1);
+        try
+            [loghyp_opt, fopt, ~, optimOutput] = fminunc(optfun, loghyp, options);
+        catch
+            fopt = NaN;
+            loghyp_opt = ones(1, length(loghyp))*NaN;
+        end
+        
+        save_loghyp_opt(i, :) = loghyp_opt;
+        save_fopt(i) = fopt;
+        
+    end
+    save_loghyp_opt
+    save_fopt
+    [~, ix] = min(save_fopt);
+    loghyp_opt = save_loghyp_opt(ix(1), :)
+    
+
+    sig = exp(loghyp_opt(1));
+    sigma2 = exp(loghyp_opt(2));
+    w = exp(loghyp_opt(3:end)); W = diag(w.^-2);
     if isempty(data.hyp)
-        data.hyp = [sigpOpt, sigaOpt, quantileOpt];
+        data.hyp = exp(loghyp_opt);
     else
-        data.hyp = [data.hyp; [sigpOpt, sigaOpt, quantileOpt]];
+        data.hyp = [data.hyp; exp(loghyp_opt)];
     end
     
     % Get latent rewards
@@ -106,6 +132,8 @@ if (N >= data.initSamples) && (mod(N-data.initSamples, data.updateSamples) == 0)
     ypred = kall * iK * fmap;
     
     Rsampled = mvnrnd(ypred, SigmaStar);
+    figure, plot3(xsampled(:, 1), xsampled(:, 2), ypred, '*'), grid on
+    hold on, plot3(xsampled(:, 1), xsampled(:, 2), Rsampled, 'ro')
     % Update policy
     objfun = @(eta) reps_dual(eta, Rsampled', data.epsilon);
     options = optimset('Algorithm','active-set');
@@ -119,6 +147,7 @@ if (N >= data.initSamples) && (mod(N-data.initSamples, data.updateSamples) == 0)
     
     data.policyMean(end+1, :) = Mu';
     data.policyCov{end+1} = Cov;
+    data.policyStd(end+1, :) = diag(Cov)'.^.5;
     
 end
 

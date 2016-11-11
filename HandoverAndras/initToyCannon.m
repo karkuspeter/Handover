@@ -4,6 +4,8 @@ data.fileName = 'ToyCannon';
 data.epsilon = 0.5;
 data.initSamples = 21;
 data.updateSamples = 5;
+data.gradRestarts = 10;
+data.numHyper = 4;
 data.samples = [0.5751    0.7159
     0.4918    0.8606
     0.6840    1.0001
@@ -26,6 +28,7 @@ data.samples = [0.5751    0.7159
     0.5561    1.1272];
 data.policyMean = [0.5, 1];
 data.policyCov = {[.2^2 0; 0 .2^2]};
+data.policyStd = [0.2, .2];
 data.prefFeedback = [2     1
      2     3
      4     3
