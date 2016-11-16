@@ -57,6 +57,18 @@ else
         else
             data.absFeedback = [N, absfeedback];
         end
+        
+        ixLow = find(data.absFeedback(:, 2) < absfeedback);
+        if ~isempty(ixLow)
+            prefFeedbackLow = [N*ones(length(ixLow), 1) data.absFeedback(ixLow, 1) ];
+            data.prefFeedback = [data.prefFeedback; prefFeedbackLow];
+        end
+        
+        ixHigh = find(data.absFeedback(:, 2) > absfeedback);
+        if ~isempty(ixHigh)
+            prefFeedbackHigh = [data.absFeedback(ixHigh, 1) N*ones(length(ixHigh), 1) ];
+            data.prefFeedback = [data.prefFeedback; prefFeedbackHigh];
+        end
     end
     
 end
@@ -76,8 +88,7 @@ if (N >= data.initSamples) && (mod(N-data.initSamples, data.updateSamples) == 0)
     save_loghyp_opt = zeros(data.gradRestarts, data.numHyper);
     save_fopt = zeros(1, data.numHyper);
     
-    wopt = kernelActivationTrick(data.samples, 0.05:.05:.5);
-    
+    wopt = kernelActivationTrick(data.samples, .1:.1:.5);
     
     parfor i = 1:size(wopt, 1)
         
