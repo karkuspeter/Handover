@@ -14,6 +14,8 @@ data.prefFeedback = [  ];
 data.absFeedback = [];
 data.failedExperiments = [];
 data.hyp = [];
+data.meanR = [];
+data.stdR = [];
 
 if exist(['./', data.fileName, '.mat'], 'file')
     error([data.fileName, '.mat already exists!'])
