@@ -46,6 +46,7 @@ else
         else
             data.prefFeedback = [N-1 N];
         end
+        
     end
     
     absfeedback = 11;
@@ -60,6 +61,19 @@ else
             data.absFeedback = [ data.absFeedback; [N, absfeedback]];
         else
             data.absFeedback = [N, absfeedback];
+        end
+        
+          
+        ixLow = find(data.absFeedback(:, 2) < (absfeedback-1));
+        if ~isempty(ixLow)
+            prefFeedbackLow = [N*ones(length(ixLow), 1) data.absFeedback(ixLow, 1) ];
+            data.prefFeedback = [data.prefFeedback; prefFeedbackLow];
+        end
+        
+        ixHigh = find(data.absFeedback(:, 2) > (absfeedback+1));
+        if ~isempty(ixHigh)
+            prefFeedbackHigh = [data.absFeedback(ixHigh, 1) N*ones(length(ixHigh), 1) ];
+            data.prefFeedback = [data.prefFeedback; prefFeedbackHigh];
         end
     end
     
@@ -76,13 +90,19 @@ if (N >= data.initSamples) && (mod(N-data.initSamples, data.updateSamples) == 0)
     absFeedback(:, 2) = (absFeedback(:, 2)-1) * 4/9 -2;
     x = data.samples;
     prefs = data.prefFeedback;
-    activations = 0.05:.05:.5;
+    activations =  0.1:.1:.5;
     
-    save_loghyp_opt = zeros(length(activations), data.numHyper);
-    save_fopt = zeros(1, data.numHyper);
+  
     
-    wopt = kernelActivationTrick(data.samples, 0.05:.05:.5);
+    wopt = kernelActivationTrick(data.samples, activations);
+    try
+        wopt = [wopt; data.hyp(end, 3:end)];
+    catch
+        disp('no previous hyp yet')
+    end
     
+      save_loghyp_opt = zeros(size(wopt, 1), size(wopt, 2)+2);
+    save_fopt = zeros(1, size(wopt, 1));
     
     parfor i = 1:size(wopt, 1)
         
@@ -145,7 +165,7 @@ if (N >= data.initSamples) && (mod(N-data.initSamples, data.updateSamples) == 0)
     % Sample a lot for policy update
     iK = eye(size(Sigma))/(Sigma);
     
-    xsampled = mvnrnd(data.policyMean(end, :), data.policyCov{end}, 1000);
+    xsampled = mvnrnd(data.policyMean(end, :), data.policyCov{end}, 5000);
     
     kall = exp(-.5 * maha(xsampled, x, W));
     Kxx = exp(-.5 * maha(xsampled, xsampled, W)) ;

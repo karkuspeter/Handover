@@ -1,14 +1,14 @@
 clear all, close all
 
 data.fileName = 'HandoverLearning_test';
-data.epsilon = 0.5;
-data.initSamples = 20;
+data.epsilon = 0.7;
+data.initSamples = 29;
 data.updateSamples = 5;
+data.numHyper = 7;
 data.samples = [];
-% data.policyMean = [.7 1.1 1.1 0 -150];
-% data.policyMean =  [0.5,.5, .5, -300, -300];
-data.policyMean =  [.8, 1.8, 1.8, -150, -150];
-data.policyCov = {diag([.01,.01,.01,.01,.01].^2)};
+data.policyMean = [.7 1.1 1.1 0 -150];
+data.policyCov = {diag([.1,.3,.3,100,50].^2)};
+data.policyStd = [.1,.3,.3,100,50];
 data.prefFeedback = [  ];
 data.absFeedback = [  ];
 data.failedExperiments = [];
