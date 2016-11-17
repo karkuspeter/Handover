@@ -15,6 +15,8 @@ data.failedExperiments = [];
 data.hyp = [];
 data.polparMinLimit = [0.5,.5, .5, -300, -300];
 data.polparMaxLimit = [.95, 1.8, 1.8, 300, 0];
+data.meanR = [];
+data.stdR = [];
 
 if exist(['./', data.fileName, '.mat'], 'file')
     error([data.fileName, '.mat already exists!'])

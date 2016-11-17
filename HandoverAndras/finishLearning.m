@@ -1,6 +1,5 @@
 clear all, close all
 
-clear all, close all
 addpath('./pref')
 addpath('../Matlab_Network/')
 addpath('./reps_demo/')
@@ -8,7 +7,7 @@ addpath('./gp/')
 
 warning('off')
 
-load('HandoverLearning_test.mat')
+load('ToyCannon5dim.mat')
 
 ridge = 1e-4;
 go = 1;
@@ -16,13 +15,15 @@ while go
     
     loghyp_opt = log(data.hyp(end, :));
     absFeedback = data.absFeedback;
-    absFeedback(:, 2) = (absFeedback(:, 2)-1) * 4/9 -2;
+    absFeedback(:, 2) = (absFeedback(:, 2)-1) * 4/9 -2; 
     x = data.samples;
     prefs = data.prefFeedback;
     
     sig = exp(loghyp_opt(1));
     sigma2 = exp(loghyp_opt(2));
-    w = exp(loghyp_opt(3:end)); W = diag(w.^-2);
+    fixedActivation = 0.2;
+    fixedW = kernelActivationTrick(x, fixedActivation);
+    W = diag(fixedW.^-2);
     
     % Get latent rewards
     Sigma = exp(-.5 * maha(x, x, W)) ;
@@ -63,7 +64,7 @@ while go
     data.policyCov{end+1} = Cov;
     data.policyStd(end+1, :) = diag(Cov)'.^.5;
     
-    if all(data.policyStd(end, :) < [.01, .01, .01, 5, 5])
+    if all(data.policyStd(end, :) < [.01, .01, .01, .01, .01])
         go = 0;
     end
     
