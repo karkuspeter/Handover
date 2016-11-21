@@ -16,7 +16,10 @@ data.failedExperiments = [];
 data.hyp = [];
 data.meanR = [];
 data.stdR = [];
-
+data.kernelActivation = [];
+data.meanR_init = [];
+data.stdR_init = [];
+data.meanR_initMean = [];
 if exist(['./', data.fileName, '.mat'], 'file')
     error([data.fileName, '.mat already exists!'])
 else

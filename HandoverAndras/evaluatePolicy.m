@@ -6,7 +6,7 @@ addpath('./gp/')
 
 warning('off')
 
-load('HandoverLearningOrientation_test.mat')
+load('HandoverLearningOrientation_Andras.mat')
 ridge = 1e-4;
 for i = 1:size(data.policyMean, 1)
     
@@ -25,6 +25,7 @@ for i = 1:size(data.policyMean, 1)
      
     % Get latent rewards
     Sigma = exp(-.5 * maha(x, x, W)) ;
+    kernelAct = median(mean(Sigma, 2))
     Sigma = Sigma + eye(size(Sigma)) * ridge;
     
     f = zeros(size(x,1), 1);
@@ -38,7 +39,7 @@ for i = 1:size(data.policyMean, 1)
     Kxx = exp(-.5 * maha(xsampled, xsampled, W)) ;
     ypred = kall * iK * fmap;
             
-    policyMean(i) = mean(ypred) * 9/4 + 3;
+    policyMean(i) = mean(ypred) * 9/4 + 2;
     policyStd(i) = std(ypred) * 9/4;
         
     xsampled_initPolicy = mvnrnd(data.policyMean(1, :), data.policyCov{1}, 10000);
@@ -46,7 +47,7 @@ for i = 1:size(data.policyMean, 1)
     Kxx = exp(-.5 * maha(xsampled_initPolicy, xsampled_initPolicy, W)) ;
     ypred = kall * iK * fmap;
     
-    policyMean_orig(i) = mean(ypred) *9/4 +3;
+    policyMean_orig(i) = mean(ypred) *9/4 +2;
     policyStd_orig(i) = std(ypred) *9/4;
     
     xsampled_initPolicy = data.policyMean(1, :);
@@ -54,7 +55,7 @@ for i = 1:size(data.policyMean, 1)
     Kxx = exp(-.5 * maha(xsampled_initPolicy, xsampled_initPolicy, W)) ;
     ypred = kall * iK * fmap;
     
-    policyMean_origMean(i) = mean(ypred) *9/4 +3;
+    policyMean_origMean(i) = mean(ypred) *9/4 +2;
        
 end
 
@@ -68,10 +69,9 @@ plot(policyMean_orig-2*policyStd_orig, 'b--')
 
 plot(policyMean_origMean, 'r-')
 
+
 figure, plot(policyMean-policyMean_orig, 'k')
 hold on, plot(policyMean-policyMean_orig + 2*(policyStd+policyStd_orig), 'k--');
 hold on, plot(policyMean-policyMean_orig - 2*(policyStd+policyStd_orig), 'k--');
-
-figure, 
-plot(policyMean-policyMean_origMean, 'r-')
+title('Diff orig to learned policy')
 

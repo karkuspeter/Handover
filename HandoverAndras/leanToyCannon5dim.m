@@ -58,13 +58,13 @@ else
             data.absFeedback = [N, absfeedback];
         end
         
-        ixLow = find(data.absFeedback(:, 2) < absfeedback);
+        ixLow = find(data.absFeedback(:, 2) < (absfeedback-1));
         if ~isempty(ixLow)
             prefFeedbackLow = [N*ones(length(ixLow), 1) data.absFeedback(ixLow, 1) ];
             data.prefFeedback = [data.prefFeedback; prefFeedbackLow];
         end
         
-        ixHigh = find(data.absFeedback(:, 2) > absfeedback);
+        ixHigh = find(data.absFeedback(:, 2) > (absfeedback+1));
         if ~isempty(ixHigh)
             prefFeedbackHigh = [data.absFeedback(ixHigh, 1) N*ones(length(ixHigh), 1) ];
             data.prefFeedback = [data.prefFeedback; prefFeedbackHigh];
@@ -77,71 +77,40 @@ N = size(data.samples, 1);
 
 ridge = 1e-4;
 if (N >= data.initSamples) && (mod(N-data.initSamples, data.updateSamples) == 0)
-    % update policy
+     % update policy
     disp('updating policy')
     
     absFeedback = data.absFeedback;
     absFeedback(:, 2) = (absFeedback(:, 2)-1) * 4/9 -2;
     x = data.samples;
     prefs = data.prefFeedback;
+    fixedActivation = 0.2;
+    fixedW = kernelActivationTrick(x, fixedActivation);
     
-    save_loghyp_opt = zeros(data.gradRestarts, data.numHyper);
-    save_fopt = zeros(1, data.numHyper);
+    loghyp = log([0.5, 0.2]);
+    % get hyperparameters
+    options = optimoptions('fminunc', 'Algorithm','trust-region','GradObj','on','Hessian', 'off', 'MaxFunEvals', 1000, 'TolX', 1e-3, 'TolFun', 1e-2);
+    optfun = @(lh) pref_loghyp_numGrad_fixedKernelActivation(lh, x, prefs, absFeedback, ridge, 1, fixedW);
     
-    wopt = kernelActivationTrick(data.samples, .1:.1:.5);
+    [loghyp_opt, fopt, ~, optimOutput] = fminunc(optfun, loghyp, options);
     
-    parfor i = 1:size(wopt, 1)
-        
-        w = wopt(i, :);
-        loghyp = log([0.5, 0.2, w]);
-        % get hyperparameters
-        options = optimoptions('fminunc', 'Algorithm','trust-region','GradObj','on','Hessian', 'off', 'MaxFunEvals', 100, 'TolX', 1e-3, 'TolFun', 1e-2);
-        optfun = @(lh) pref_loghyp_numGrad(lh, x, prefs, absFeedback, ridge, 1);
-        try
-            [loghyp_opt, fopt, ~, optimOutput] = fminunc(optfun, loghyp, options);
-        catch
-            fopt = NaN;
-            loghyp_opt = ones(1, length(loghyp))*NaN;
-        end
-        
-        save_loghyp_opt(i, :) = loghyp_opt;
-        save_fopt(i) = fopt;
-        
-    end
-    
-    for i = 1:length(save_fopt)
-        w = exp(save_loghyp_opt(i, 3:end)); W = diag(w.^-2);
-        Sigma = exp(-.5 * maha(x, x, W)) ;  
-        median_kernel_activation(i) = median(mean(Sigma, 2));
-    end
-    
-    
-    [save_fopt_sorted, ix] = sort(save_fopt);
-    
-    [ save_loghyp_opt(ix, :), save_fopt_sorted', median_kernel_activation(ix)',[1:length(save_fopt)]']
-    optNum = 1000;
-    while optNum > length(save_fopt)
-        optNum = input('Which hyper do you accept?: ');
-        if isempty(optNum)
-            optNum = 1;
-        end
-    end
-    
-    loghyp_opt = save_loghyp_opt(ix(optNum), :);
-
     sig = exp(loghyp_opt(1));
     sigma2 = exp(loghyp_opt(2));
-    w = exp(loghyp_opt(3:end)); W = diag(w.^-2);
+    w = fixedW; W = diag(w.^-2);
     if isempty(data.hyp)
-        data.hyp = exp(loghyp_opt);
+        data.hyp = [exp(loghyp_opt), fixedW(:)'];
     else
-        data.hyp = [data.hyp; exp(loghyp_opt)];
+        data.hyp = [data.hyp; [exp(loghyp_opt), fixedW(:)']];
     end
     
     % Get latent rewards
     Sigma = exp(-.5 * maha(x, x, W)) ;
     Sigma = Sigma + eye(size(Sigma)) * ridge;
-    median_kernel_activation = median(mean(Sigma, 2))
+    if isempty(data.kernelActivation)
+        data.kernelActivation = median(mean(Sigma, 2));
+    else
+        data.kernelActivation = [data.kernelActivation, median(mean(Sigma, 2))];
+    end
     
     plotMatrix(Sigma);
     
@@ -176,7 +145,45 @@ if (N >= data.initSamples) && (mod(N-data.initSamples, data.updateSamples) == 0)
     data.policyMean(end+1, :) = Mu';
     data.policyCov{end+1} = Cov;
     data.policyStd(end+1, :) = diag(Cov)'.^.5;
+    data.meanR(end+1) = mean(ypred);
+    data.stdR(end+1) = std(ypred);
     
+    disp('kernelActivaton')
+    data.kernelActivation(end)
+    figure, plot(data.meanR, 'k-')
+    hold on, 
+    plot(data.meanR + data.stdR*2, 'k--')
+    plot(data.meanR - data.stdR*2, 'k--')
+    
+    % evaluate initial policy
+    xsampled = mvnrnd(data.policyMean(1, :), data.policyCov{1}, 1000);
+    
+    kall = exp(-.5 * maha(xsampled, x, W));
+    Kxx = exp(-.5 * maha(xsampled, xsampled, W)) ;
+    SigmaStar = ridge* eye(size(Kxx)) + Kxx - kall / (Sigma + eye(size(GammaMap))/(GammaMap + ridge*eye(size(Sigma)))) * kall';
+    SigmaStar = (SigmaStar + SigmaStar')/2;
+    
+    ypred = kall * iK * fmap;
+    
+    data.meanR_init(end+1) = mean(ypred);
+    data.stdR_init(end+1) = std(ypred);
+    
+    plot(data.meanR_init, 'r-')
+    plot(data.meanR_init + 2*data.stdR_init, 'r--')
+    plot(data.meanR_init - 2*data.stdR_init, 'r--')
+    % evaluate initial mean
+    xsampled = data.policyMean(1, :);
+    
+    kall = exp(-.5 * maha(xsampled, x, W));
+    Kxx = exp(-.5 * maha(xsampled, xsampled, W)) ;
+    SigmaStar = ridge* eye(size(Kxx)) + Kxx - kall / (Sigma + eye(size(GammaMap))/(GammaMap + ridge*eye(size(Sigma)))) * kall';
+    SigmaStar = (SigmaStar + SigmaStar')/2;
+    
+    ypred = kall * iK * fmap;
+    data.meanR_initMean(end+1) = mean(ypred);
+    plot(data.meanR_initMean, 'b-')
+        
+    keyboard
 end
 
 save('ToyCannon5dim', 'data')

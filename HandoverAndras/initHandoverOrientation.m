@@ -19,6 +19,10 @@ data.polparMinLimit = [0.5, .5, -300,  -90/180*pi ];
 data.polparMaxLimit = [.95, 1.8, 300, 90/180*pi];
 data.meanR = [];
 data.stdR = [];
+data.kernelActivation = [];
+data.meanR_init = [];
+data.stdR_init = [];
+data.meanR_initMean = [];
 
 if exist(['./', data.fileName, '.mat'], 'file')
     error([data.fileName, '.mat already exists!'])

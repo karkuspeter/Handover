@@ -104,15 +104,19 @@ if (N >= data.initSamples) && (mod(N-data.initSamples, data.updateSamples) == 0)
     sigma2 = exp(loghyp_opt(2));
     w = fixedW; W = diag(w.^-2);
     if isempty(data.hyp)
-        data.hyp = exp(loghyp_opt);
+        data.hyp = [exp(loghyp_opt), fixedW(:)'];
     else
-        data.hyp = [data.hyp; exp(loghyp_opt)];
+        data.hyp = [data.hyp; [exp(loghyp_opt), fixedW(:)']];
     end
     
     % Get latent rewards
     Sigma = exp(-.5 * maha(x, x, W)) ;
     Sigma = Sigma + eye(size(Sigma)) * ridge;
-    median_kernel_activation = median(mean(Sigma, 2))
+    if isempty(data.kernelActivation)
+        data.kernelActivation = median(mean(Sigma, 2));
+    else
+        data.kernelActivation = [data.kernelActivation, median(mean(Sigma, 2))];
+    end
     
     plotMatrix(Sigma);
     
@@ -150,6 +154,42 @@ if (N >= data.initSamples) && (mod(N-data.initSamples, data.updateSamples) == 0)
     data.meanR(end+1) = mean(ypred);
     data.stdR(end+1) = std(ypred);
     
+    disp('kernelActivaton')
+    data.kernelActivation(end)
+    figure, plot(data.meanR, 'k-')
+    hold on, 
+    plot(data.meanR + data.stdR*2, 'k--')
+    plot(data.meanR - data.stdR*2, 'k--')
+    
+    % evaluate initial policy
+    xsampled = mvnrnd(data.policyMean(1, :), data.policyCov{1}, 1000);
+    
+    kall = exp(-.5 * maha(xsampled, x, W));
+    Kxx = exp(-.5 * maha(xsampled, xsampled, W)) ;
+    SigmaStar = ridge* eye(size(Kxx)) + Kxx - kall / (Sigma + eye(size(GammaMap))/(GammaMap + ridge*eye(size(Sigma)))) * kall';
+    SigmaStar = (SigmaStar + SigmaStar')/2;
+    
+    ypred = kall * iK * fmap;
+    
+    data.meanR_init(end+1) = mean(ypred);
+    data.stdR_init(end+1) = std(ypred);
+    
+    plot(data.meanR_init, 'r-')
+    plot(data.meanR_init + 2*data.stdR_init, 'r--')
+    plot(data.meanR_init - 2*data.stdR_init, 'r--')
+    % evaluate initial mean
+    xsampled = data.policyMean(1, :);
+    
+    kall = exp(-.5 * maha(xsampled, x, W));
+    Kxx = exp(-.5 * maha(xsampled, xsampled, W)) ;
+    SigmaStar = ridge* eye(size(Kxx)) + Kxx - kall / (Sigma + eye(size(GammaMap))/(GammaMap + ridge*eye(size(Sigma)))) * kall';
+    SigmaStar = (SigmaStar + SigmaStar')/2;
+    
+    ypred = kall * iK * fmap;
+    data.meanR_initMean(end+1) = mean(ypred);
+    plot(data.meanR_initMean, 'b-')
+  
+    keyboard
     
 end
 
