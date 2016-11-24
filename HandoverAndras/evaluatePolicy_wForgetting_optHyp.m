@@ -6,10 +6,10 @@ addpath('./gp/')
 
 warning('off')
 
-load('HandoverLearningOrientation_Ziquan.mat')
+load('HandoverLearningOrientation_Andras.mat')
 ridge = 1e-4;
 
-lastSamples = 30;
+lastSamples = 40;
 fixedActivation = 0.2;
 
 rng('default');
@@ -99,14 +99,14 @@ hold on, plot(policyMean_orig, 'r-')
 plot(policyMean_origMean, 'b-')
 plot(policyMean_rand, 'b', 'LineWidth', 2)
 legend('E[R] learned', 'E[R] init', 'R init mean', 'E[R] rand')
-hold on, plot(policyMean + 2*policyStd, 'k--')
-hold on, plot(policyMean - 2*policyStd, 'k--')
-
-plot(policyMean_orig+2*policyStd_orig, 'r--')
-plot(policyMean_orig-2*policyStd_orig, 'r--')
-
-plot(policyMean_rand-2*policyStd_rand, 'b--', 'LineWidth', 2)
-plot(policyMean_rand+2*policyStd_rand, 'b--', 'LineWidth', 2)
+% hold on, plot(policyMean + 2*policyStd, 'k--')
+% hold on, plot(policyMean - 2*policyStd, 'k--')
+% 
+% plot(policyMean_orig+2*policyStd_orig, 'r--')
+% plot(policyMean_orig-2*policyStd_orig, 'r--')
+% 
+% plot(policyMean_rand-2*policyStd_rand, 'b--', 'LineWidth', 2)
+% plot(policyMean_rand+2*policyStd_rand, 'b--', 'LineWidth', 2)
 
 title(['Performance with last ', num2str(lastSamples) , ' samples'])
 xlabel('policy updates')

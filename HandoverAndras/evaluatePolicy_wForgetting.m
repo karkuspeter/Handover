@@ -47,7 +47,7 @@ for i = 1:size(data.policyMean, 1)-1
     [loghyp_opt, fopt, ~, optimOutput] = fminunc(optfun, loghyp, options);
     
     sig = exp(loghyp_opt(1));
-    sigma2 = exp(loghyp_opt(2));
+    sigma2 = min(exp(loghyp_opt(2)), 0.5);
     w = fixedW; W = diag(w.^-2);
     hypOpt(i, :) = [sig sigma2 fixedW(:)'];    
     
@@ -102,14 +102,14 @@ hold on, plot(policyMean_orig, 'r-')
 plot(policyMean_origMean, 'b-')
 plot(policyMean_rand, 'b', 'LineWidth', 2)
 legend('E[R] learned', 'E[R] init', 'R init mean', 'E[R] rand')
-hold on, plot(policyMean + 2*policyStd, 'k--')
-hold on, plot(policyMean - 2*policyStd, 'k--')
-
-plot(policyMean_orig+2*policyStd_orig, 'r--')
-plot(policyMean_orig-2*policyStd_orig, 'r--')
-
-plot(policyMean_rand-2*policyStd_rand, 'b--', 'LineWidth', 2)
-plot(policyMean_rand+2*policyStd_rand, 'b--', 'LineWidth', 2)
+% hold on, plot(policyMean + 2*policyStd, 'k--')
+% hold on, plot(policyMean - 2*policyStd, 'k--')
+% % 
+% plot(policyMean_orig+2*policyStd_orig, 'r--')
+% plot(policyMean_orig-2*policyStd_orig, 'r--')
+% 
+% plot(policyMean_rand-2*policyStd_rand, 'b--', 'LineWidth', 2)
+% plot(policyMean_rand+2*policyStd_rand, 'b--', 'LineWidth', 2)
 
 title(['Performance with last ', num2str(lastSamples) , ' samples'])
 xlabel('policy updates')
@@ -175,7 +175,7 @@ for i = 1:size(data.policyMean, 1)-1
     policyMean_rand(i) = mean(ypred) *9/4 +5.5;
     policyStd_rand(i) = std(ypred) *9/4;
     
-    
+ 
     xsampled_initPolicy = data.policyMean(1, :);
     kall = exp(-.5 * maha(xsampled_initPolicy, x, W));
     Kxx = exp(-.5 * maha(xsampled_initPolicy, xsampled_initPolicy, W)) ;
@@ -190,14 +190,14 @@ hold on, plot(policyMean_orig, 'r-')
 plot(policyMean_origMean, 'b-')
 plot(policyMean_rand, 'b', 'LineWidth', 2)
 legend('E[R] learned', 'E[R] init', 'R init mean', 'E[R] rand')
-hold on, plot(policyMean + 2*policyStd, 'k--')
-hold on, plot(policyMean - 2*policyStd, 'k--')
+% hold on, plot(policyMean + 2*policyStd, 'k--')
+% hold on, plot(policyMean - 2*policyStd, 'k--')
 
-plot(policyMean_orig+2*policyStd_orig, 'r--')
-plot(policyMean_orig-2*policyStd_orig, 'r--')
-
-plot(policyMean_rand-2*policyStd_rand, 'b--', 'LineWidth', 2)
-plot(policyMean_rand+2*policyStd_rand, 'b--', 'LineWidth', 2)
+% plot(policyMean_orig+2*policyStd_orig, 'r--')
+% plot(policyMean_orig-2*policyStd_orig, 'r--')
+% 
+% plot(policyMean_rand-2*policyStd_rand, 'b--', 'LineWidth', 2)
+% plot(policyMean_rand+2*policyStd_rand, 'b--', 'LineWidth', 2)
 
 title(['Performance with last ', num2str(lastSamples) , ' samples (fixed last hyp)'])
 xlabel('policy updates')
