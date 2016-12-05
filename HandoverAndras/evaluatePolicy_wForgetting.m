@@ -6,7 +6,7 @@ addpath('./gp/')
 
 warning('off')
 
-load('HandoverLearningOrientation_Yuanfu.mat')
+load('HandoverLearningOrientation_Aggie.mat')
 ridge = 1e-4;
 
 lastSamples = 40;
