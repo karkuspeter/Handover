@@ -6,7 +6,7 @@ addpath('./gp/')
 
 warning('off')
 
-load('HandoverLearningOrientation_Aggie.mat')
+load('HandoverLearningOrientation_Ziquan.mat')
 ridge = 1e-4;
 
 lastSamples = 40;
@@ -38,7 +38,12 @@ for i = 1:size(data.policyMean, 1)-1
     prefs = prefs(ixOkPrefs, :) - ixLow +1;
     
     
-    fixedW = kernelActivationTrick(x, fixedActivation);
+    try
+        fixedW = kernelActivationTrick(x, fixedActivation);
+    catch
+        disp('fixedW computation error, using previous one')
+        fixedW = hypOpt(i-1, 3:end);
+    end
     loghyp = log([0.5, 0.2]);
     % get hyperparameters
     options = optimoptions('fminunc', 'Algorithm','trust-region','GradObj','on','Hessian', 'off', 'MaxFunEvals', 1000, 'TolX', 1e-3, 'TolFun', 1e-2);
@@ -67,6 +72,7 @@ for i = 1:size(data.policyMean, 1)-1
     Kxx = exp(-.5 * maha(xsampled, xsampled, W)) ;
     ypred = kall * iK * fmap;
     
+    
     policyMean(i) = mean(ypred) * 9/4 + 5.5;
     policyStd(i) = std(ypred) * 9/4;
     
@@ -84,6 +90,10 @@ for i = 1:size(data.policyMean, 1)-1
     kall = exp(-.5 * maha(xsampled_initPolicy, x, W));
     Kxx = exp(-.5 * maha(xsampled_initPolicy, xsampled_initPolicy, W)) ;
     ypred = kall * iK * fmap;
+    kernelActivationLearntPolicy(i) = mean(kall);
+    maxKernelActivationLearntPolicy(i) = max(kall);
+    medianKernelActivationLearntPolicy(i) = median(kall);
+    
     
     policyMean_rand(i) = mean(ypred) *9/4 +5.5;
     policyStd_rand(i) = std(ypred) *9/4;
@@ -93,6 +103,9 @@ for i = 1:size(data.policyMean, 1)-1
     kall = exp(-.5 * maha(xsampled_initPolicy, x, W));
     Kxx = exp(-.5 * maha(xsampled_initPolicy, xsampled_initPolicy, W)) ;
     ypred = kall * iK * fmap;
+    kernelActivationInitPolicy(i) = mean(kall);
+    maxKernelActivationInitPolicy(i) = max(kall);
+    medianKernelActivationInitPolicy(i) = median(kall);
     
     policyMean_origMean(i) = mean(ypred) *9/4 +5.5;
     
@@ -114,6 +127,15 @@ legend('E[R] learned', 'E[R] init', 'R init mean', 'R final learned')
 
 title(['Performance with last ', num2str(lastSamples) , ' samples'])
 xlabel('policy updates')
+
+figure, plot(kernelActivationLearntPolicy, 'b', 'LineWidth', 2)
+hold on, plot(kernelActivationInitPolicy, 'r')
+plot(maxKernelActivationLearntPolicy, 'b--', 'LineWidth', 2);
+plot(maxKernelActivationInitPolicy, 'r--');
+plot(medianKernelActivationLearntPolicy, 'b.-', 'LineWidth', 1);
+plot(medianKernelActivationInitPolicy, 'r.-');
+
+legend('kernelActivation learnt', 'kernelAcivation init', 'kernelActivation maxLearnt', 'kernelActivation MaxIniit', 'kernelActivation medianLearnt', 'kernelActivation meidanIniit')
 
 % % Evaluate all performance with last hyp
 % for i = 1:size(data.policyMean, 1)-1
