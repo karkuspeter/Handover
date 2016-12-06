@@ -6,16 +6,14 @@ addpath('./gp/')
 
 warning('off')
 
-
 ridge = 1e-4;
 
-lastSamples = 40;
 fixedActivation = 0.2;
 dataSize = [30 50 70 100];
 
 userData;
 
-for j =1:length(user.names)
+for j =length(user.names):length(user.names)
     load(['HandoverLearningOrientation_', user.names{j}, '.mat'])
     for i = 1:length(dataSize)
         %% init policy
@@ -37,15 +35,20 @@ for j =1:length(user.names)
         
         fixedW = kernelActivationTrick(x, fixedActivation);
 
-        loghyp = log([0.5, 0.2]);
+        loghyp = log([.5, 0.2]);
         % get hyperparameters
         options = optimoptions('fminunc', 'Algorithm','trust-region','GradObj','on','Hessian', 'off', 'MaxFunEvals', 1000, 'TolX', 1e-3, 'TolFun', 1e-2);
         optfun = @(lh) pref_loghyp_numGrad_fixedKernelActivation(lh, x, prefs, absFeedback, ridge, 1, fixedW);
         
+        try
         [loghyp_opt, fopt, ~, optimOutput] = fminunc(optfun, loghyp, options);
         
         sig = exp(loghyp_opt(1));
         sigma2 = min(exp(loghyp_opt(2)), 0.5);
+        catch 
+            sig = .5;
+            sigma2 = .2;
+        end
         w = fixedW; W = diag(w.^-2);
         
         % Get latent rewards
@@ -90,10 +93,15 @@ for j =1:length(user.names)
         options = optimoptions('fminunc', 'Algorithm','trust-region','GradObj','on','Hessian', 'off', 'MaxFunEvals', 1000, 'TolX', 1e-3, 'TolFun', 1e-2);
         optfun = @(lh) pref_loghyp_numGrad_fixedKernelActivation(lh, x, prefs, absFeedback, ridge, 1, fixedW);
         
+      try
         [loghyp_opt, fopt, ~, optimOutput] = fminunc(optfun, loghyp, options);
         
         sig = exp(loghyp_opt(1));
         sigma2 = min(exp(loghyp_opt(2)), 0.5);
+        catch 
+            sig = .5;
+            sigma2 = .2;
+        end
         w = fixedW; W = diag(w.^-2);
                 
         % Get latent rewards
@@ -120,6 +128,9 @@ for j =1:length(user.names)
     
     figure, plot(dataSize, policyMean_learntMean, 'b')
     hold on, plot(dataSize, policyMean_initMean, 'r')
+    plot(dataSize, repmat(mean(user.initScores(j, :)), 1, length(dataSize)), 'r--')
+    plot(dataSize, repmat(mean(user.finalScores(j, :)), 1, length(dataSize)), 'b--')
+    
     legend('learnt', 'init')
     title(user.names{j})
     ylabel('E[R]')
@@ -136,8 +147,9 @@ for j =1:length(user.names)
     xlabel('numLastSamples')
     ylabel('kernelActivation')
     title(user.names{j})
-    
-    saveas(gca, ['numLastSamples_kernel_', user.names{j},'.fig'])
-    
     legend('kernelActivation learnt', 'kernelAcivation init', 'kernelActivation maxLearnt', 'kernelActivation MaxIniit', 'kernelActivation medianLearnt', 'kernelActivation meidanIniit')
+    
+    saveas(gca, ['evaluations/numLastSamples_kernel_', user.names{j},'.fig'])
+    
+    
 end

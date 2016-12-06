@@ -1,6 +1,7 @@
 function w_opt = kernelActivationTrick(samples, activations)
 
 w = medianTrick(samples, 1);
+w = max(w, 1e-4*ones(1, length(w)));
 w_opt = zeros(length(activations), length(w));
 options = optimoptions('fminunc', 'Algorithm','trust-region','GradObj','on','Hessian', 'off', 'MaxFunEvals', 1000, 'TolFun', 1e-3, 'TolX', 1e-100, 'Display', 'off');
 for i = 1:length(activations)
