@@ -19,14 +19,9 @@ for i = 1:length(user.names)
     
 end
 
-figure, bar(barData)
-legend('LearntRewardMean', 'LearntReportedMean', 'InitRewardMean', 'ReportedInitMean')
-xlabel('#subject')
-ylabel('Reward')
-title('Reward model prediction vs reported rewards')
-
 figure, barwitherr(errorBarData, barData)
-legend('LearntRewardMean', 'LearntReportedMean', 'InitRewardMean', 'ReportedInitMean')
+legend('LearntPolicyModel', 'LearntPolicyHuman', 'InitPolicyModel', 'InitPolicyHuman')
 xlabel('#subject')
 ylabel('Reward')
 title('Reward model prediction vs reported rewards')
+set(gca,'box','off')
