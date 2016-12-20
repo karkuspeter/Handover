@@ -12,7 +12,7 @@ fixedActivation = 0.2;
 
 userData;
 
-for j =1:length(user.names)
+for j =1:1
     load(['HandoverLearningOrientation_', user.names{j}, '.mat'])
     for i= 1:size(data.hyp, 1)
         
