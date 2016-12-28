@@ -88,12 +88,12 @@ for j =1:length(user.names)
        
    end
    
-   clf, subplot(2,2,1), plot(meanRho), hold on, plot(stdRho, '--')
+   clf, subplot(2,2,1), plot(meanRho, 'LineWidth', 2), hold on, plot(stdRho, '--', 'LineWidth', 2)
    title([user.names{j}, ', mean(meanRho) = ', num2str(mean(meanRho))]);
-   subplot(2,2,2), plot(rho(end, :))
+   subplot(2,2,2), plot(rho(end, :), 'LineWidth', 2)
    title([user.names{j}, ', mean(corrcoef All) = ', num2str(mean(rho(end, :))), ' diffLearned = ', num2str(diffLearned)]);
-   subplot(2,2,3), plot([meanRho1; meanRho2; meanRho3; meanRho4]'), ylabel('meanRho Pars')
-   subplot(2,2,4), plot([stdRho1; stdRho2; stdRho3; stdRho4]'), ylabel('meanRho Pars')
+   subplot(2,2,3), plot([meanRho1; meanRho2; meanRho3; meanRho4]', 'LineWidth', 2), ylabel('meanRho Pars')
+   subplot(2,2,4), plot([stdRho1; stdRho2; stdRho3; stdRho4]', 'LineWidth', 2), ylabel('meanRho Pars')
    drawnow
    
    pause
