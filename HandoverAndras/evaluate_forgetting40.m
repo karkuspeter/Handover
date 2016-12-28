@@ -26,11 +26,11 @@ for j =1:length(user.names)
     diffRModel(j) = data.meanR(end) - data.meanR_init(end);
     
     if diffReported(j) > 0
-        marker{j} = 'o';
+        marker{j} = 'ko';
     elseif and(diffReported(j) > -.5, diffReported(j) < 0)
-        marker{j} = '*';
+        marker{j} = 'b*';
     else
-        marker{j} = 'x';
+        marker{j} = 'rx';
     end
     
     subplot(5, 2, 1)
