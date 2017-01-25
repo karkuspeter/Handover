@@ -26,8 +26,13 @@ for j =1:length(user.names)
     w = hypFinal(3:end); W = diag(w.^-2);
     x = data.samples;
     prefs = data.prefFeedback;
+<<<<<<< HEAD
     absFeedback = data.absFeedback;
     absFeedback(:, 2) = (data.absFeedback(:, 2) - 5.5)/9*4;
+=======
+    absFeedback = data.absFeedback ;
+    absFeedback(:, 2) = (absFeedback(:, 2) - 5.5) * 4/9;
+>>>>>>> ba739988a4db78a3a469141641cda8d2b9afede5
     
     Sigma = exp(-.5 * maha(x, x, W)) ;
     Sigma = Sigma + eye(size(Sigma)) * ridge;
@@ -41,12 +46,17 @@ for j =1:length(user.names)
         xsampled = finalPolicyMean(i, :);
        
         kall = exp(-.5 * maha(xsampled, x, W));
+<<<<<<< HEAD
+=======
+        kernelAct(j, i) = mean(kall);
+>>>>>>> ba739988a4db78a3a469141641cda8d2b9afede5
         Kxx = exp(-.5 * maha(xsampled, xsampled, W)) ;
         SigmaStar = ridge* eye(size(Kxx)) + Kxx - kall / (Sigma + eye(size(GammaMap))/(GammaMap + ridge*eye(size(Sigma)))) * kall';
         SigmaStar = (SigmaStar + SigmaStar')/2;
         
         ypred = kall * iK * fmap;
         
+<<<<<<< HEAD
         meanFinalRew(j, i) = ypred;
         stdFinalRew(j, i) = SigmaStar.^.5;
         kernelAct(j, i) = mean(kall);
@@ -75,3 +85,16 @@ figure,  barwitherr(4*errorBarData2, barData2)
 ylabel('kernel activation')
 
 corrcoef([barData, barData2])
+=======
+        meanFinalRew(j, i) = ypred * 9/4 + 5.5;
+        stdFinalRew(j, i) = (SigmaStar * (9/4)^2).^.5 ;
+        
+    end
+    
+    advRewMean(j) = mean(meanFinalRew(j, j) - meanFinalRew(j, [1:(j-1), (j+1):10]));
+    advRewStd(j) = std(meanFinalRew(j, j) - meanFinalRew(j, [1:(j-1), (j+1):10]));
+end
+plotMatrix(meanFinalRew); ylabel('MeanFinalRew')
+plotMatrix(stdFinalRew); ylabel('StdFinalRew')
+plotMatrix(kernelAct); ylabel('MeanKernelAct')
+>>>>>>> ba739988a4db78a3a469141641cda8d2b9afede5
